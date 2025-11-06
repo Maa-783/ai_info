@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI模型信息汇总</title>
+  <style>
+    :root {
+      --primary: #3066d3;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --surface: #fff;
+      --surface-dark: #23272e;
+      --text: #222;
+      --text-muted: #666;
+      --table-header: #f8fafc;
+      --table-header-dark: #23272e;
+      --table-stripe: #f3f6fa;
+      --table-stripe-dark: #23272e;
+      --table-hover: #e7eefa;
+      --table-hover-dark: #323843;
+      --shadow: 0 2px 8px rgba(0,0,0,0.09);
+    }
+    @media (prefers-color-scheme: dark) {
+      html,body {
+        background: #181a1b !important;
+        color: #e3e3e3 !important;
+      }
+      header, section {
+        background: var(--surface-dark) !important;
+        color: #e3e3e3 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      }
+      table {
+        background: var(--surface-dark) !important;
+        color: #e3e3e3;
+      }
+      th {
+        background: var(--table-header-dark) !important;
+        color: #e3e3e3;
+      }
+      tr:nth-child(even) {
+        background: #23272e !important;
+      }
+      tr:hover {
+        background: var(--table-hover-dark) !important;
+      }
+    }
+
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--table-stripe);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header, section {
+      margin: 24px auto 20px auto;
+      background: var(--surface);
+      padding: 22px 20px 18px 20px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      max-width: 1100px;
+      transition: background 0.3s;
+    }
+    h1, h2 {
+      color: var(--primary);
+      margin-top: 0;
+      letter-spacing: 1px;
+    }
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      margin: 0;
+    }
+
+    /* Table container for horizontal scroll */
+    .table-container {
+      overflow-x: auto;
+      margin: 0 -20px 0 -20px;
+      padding: 0 0 4px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: transparent;
+      min-width: 700px;
+      font-size: 0.98rem;
+      transition: background 0.3s;
+    }
+    th, td {
+      padding: 11px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e9e9e9;
+      vertical-align: top;
+      font-size: 0.99rem;
+      transition: background 0.2s;
+      position: relative;
+      background: none;
+      word-break: break-word;
+    }
+    th {
+      background: var(--table-header);
+      font-weight: 600;
+      color: #2852a3;
+      user-select: none;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    th.sortable:hover, th.sorted-asc, th.sorted-desc {
+      background: #e7eefa;
+      color: var(--primary);
+    }
+    th .resize-handle {
+      position: absolute;
+      right: -5px;
+      top: 0;
+      width: 10px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 2;
+      opacity: 0.45;
+      transition: background 0.2s;
+    }
+    th .resize-handle:hover {
+      background: #b9d3fa;
+      opacity: 1;
+    }
+    th.sorted-asc:after, th.sorted-desc:after {
+      content: '';
+      display: inline-block;
+      margin-left: 6px;
+      vertical-align: middle;
+      border: 6px solid transparent;
+    }
+    th.sorted-asc:after {
+      border-bottom: 7px solid var(--primary);
+    }
+    th.sorted-desc:after {
+      border-top: 7px solid var(--primary);
+    }
+    tr {
+      transition: background 0.13s;
+    }
+    tr:nth-child(even) {
+      background: var(--table-stripe);
+    }
+    tr:hover {
+      background: var(--table-hover);
+      transition: background 0.15s;
+    }
+    td ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    /* Responsive: vertical scroll for long tables on mobile */
+    @media (max-width: 800px) {
+      .table-container {
+        margin: 0 -8px 0 -8px;
+      }
+      table {
+        font-size: 0.97rem;
+        min-width: 600px;
+      }
+      th, td {
+        padding: 9px 8px;
+      }
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.2s;
+      word-break: break-all;
+    }
+    a:hover {
+      text-decoration: underline;
+      color: #184b9d;
+    }
+
+    .cost {
+      font-weight: 700;
+      color: #2e8b57;
+    }
+    .open-source-yes {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .open-source-no {
+      color: var(--danger);
+      font-weight: 600;
+    }
+    .open-source-partial {
+      color: var(--warning);
+      font-weight: 600;
+    }
+    details {
+      margin-top: 10px;
+      font-size: 0.98rem;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--primary);
+      outline: none;
+      transition: color 0.2s;
+    }
+    summary:hover {
+      color: #184b9d;
+    }
+    details[open] summary {
+      color: var(--danger);
+    }
+
+    /* Custom scrollbar for table containers */
+    .table-container::-webkit-scrollbar {
+      height: 8px;
+      background: #e7eefa;
+      border-radius: 8px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #b9d3fa;
+      border-radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .table-container::-webkit-scrollbar {
+        background: #23272e;
+      }
+      .table-container::-webkit-scrollbar-thumb {
+        background: #3d4d67;
+      }
+    }
+    /* Animation for table row hover */
+    tr {
+      transition: background 0.16s cubic-bezier(.4,0,.2,1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AI模型信息汇总</h1>
+    <p>最后更新：2025-09-18</p>
+  </header>
+  <section>
+    <h2>模型详细信息</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>名称</th>
+            <th>是否开源</th>
+            <th>商用调用成本</th>
+            <th>性能评估</th>
+            <th>参考链接</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>OpenAI GPT-4o</td><td class="open-source-no">否</td><td class="cost">USD / 1M input tokens: $2.50；USD / 1M output tokens: $10.00</td><td><ul><li>多模态视觉理解</li><li>实时音频处理</li><li>128K上下文窗口</li><li>强化推理能力</li></ul></td><td><a href="https://openai.com/api/pricing/" target="_blank">链接</a></td></tr>
+          <tr><td>Google Gemini</td><td class="open-source-no">否</td><td class="cost">USD / 1M input tokens: $0.075；USD / 1M output tokens: $0.30</td><td><ul><li>原生多模态架构</li><li>长上下文支持</li><li>代码生成优化</li><li>工具调用能力</li></ul></td><td><a href="https://ai.google.dev/pricing" target="_blank">链接</a></td></tr>
+          <tr><td>xAI Grok</td><td class="open-source-no">否</td><td>-</td><td><ul><li>实时信息访问</li><li>幽默对话风格</li><li>长文本理解</li><li>多轮对话优化</li></ul></td><td><a href="https://x.ai/" target="_blank">链接</a></td></tr>
+          <tr><td>Anthropic Claude</td><td class="open-source-no">否</td><td class="cost">USD / 1M input tokens: $3.00；USD / 1M output tokens: $15.00</td><td><ul><li>宪法AI安全框架</li><li>200K上下文长度</li><li>工具使用能力</li><li>复杂推理任务</li></ul></td><td><a href="https://www.anthropic.com/pricing" target="_blank">链接</a></td></tr>
+          <tr><td>阿里 通义千问</td><td class="open-source-partial">部分</td><td>-</td><td><ul><li>中文优化</li><li>多模态理解</li><li>代码生成</li><li>企业级安全合规</li></ul></td><td><a href="https://tongyi.aliyun.com/" target="_blank">链接</a></td></tr>
+          <tr><td>智谱 GLM</td><td class="open-source-partial">部分</td><td>-</td><td><ul><li>中英双语能力</li><li>长文本处理</li><li>代码生成</li><li>多轮对话优化</li></ul></td><td><a href="https://open.bigmodel.cn/" target="_blank">链接</a></td></tr>
+          <tr><td>DeepSeek</td><td class="open-source-yes">是</td><td>-</td><td><ul><li>高效推理架构</li><li>长上下文支持</li><li>代码生成能力</li><li>开源可商用</li></ul></td><td><a href="https://github.com/deepseek-ai" target="_blank">链接</a></td></tr>
+          <tr><td>Meta Llama</td><td class="open-source-yes">是</td><td>-</td><td><ul><li>多语言支持</li><li>代码能力强化</li><li>安全对齐</li><li>开源生态完善</li></ul></td><td><a href="https://llama.meta.com/" target="_blank">链接</a></td></tr>
+          <tr><td>Microsoft Phi</td><td class="open-source-yes">是</td><td>-</td><td><ul><li>轻量化设计</li><li>代码生成优化</li><li>数学推理能力</li><li>移动端部署</li></ul></td><td><a href="https://www.microsoft.com/en-us/research/project/phi/" target="_blank">链接</a></td></tr>
+          <tr><td>百度 文心一言</td><td class="open-source-no">否</td><td>-</td><td><ul><li>中文理解优化</li><li>多模态生成</li><li>企业级安全</li><li>行业解决方案</li></ul></td><td><a href="https://yiyan.baidu.com/" target="_blank">链接</a></td></tr>
+          <tr><td>字节跳动 豆包</td><td class="open-source-no">否</td><td>-</td><td><ul><li>对话体验优化</li><li>多模态能力</li><li>内容创作辅助</li><li>个性化推荐</li></ul></td><td><a href="https://www.doubao.com/" target="_blank">链接</a></td></tr>
+          <tr><td>零一万物 Yi</td><td class="open-source-partial">部分</td><td>-</td><td><ul><li>双语能力平衡</li><li>长上下文处理</li><li>代码生成</li><li>推理能力强化</li></ul></td><td><a href="https://www.lingyiwanwu.com/" target="_blank">链接</a></td></tr>
+          <tr><td>Mistral AI Mistral</td><td class="open-source-partial">部分</td><td class="cost">USD / 1M input tokens: $0.50；USD / 1M output tokens: $1.50</td><td><ul><li>多语言支持</li><li>推理能力强化</li><li>工具调用</li><li>高效推理架构</li></ul></td><td><a href="https://mistral.ai/pricing" target="_blank">链接</a></td></tr>
+          <tr><td>Cohere Command</td><td class="open-source-no">否</td><td class="cost">USD / 1M input tokens: $0.50；USD / 1M output tokens: $1.50</td><td><ul><li>企业级安全</li><li>检索增强生成</li><li>多语言支持</li><li>文档处理优化</li></ul></td><td><a href="https://cohere.com/pricing" target="_blank">链接</a></td></tr>
+          <tr><td>Apple Apple Intelligence</td><td class="open-source-no">否</td><td>-</td><td><ul><li>设备端隐私保护</li><li>系统级集成</li><li>个性化服务</li><li>多模态交互</li></ul></td><td><a href="https://www.apple.com/apple-intelligence/" target="_blank">链接</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section>
+    <h2>模型基本信息</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>名称</th>
+            <th>最新版本</th>
+            <th>厂商/团队</th>
+            <th>是否国内/国外</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>OpenAI GPT-4o</td><td>GPT-4o 2024-05</td><td>OpenAI</td><td>国外</td></tr>
+          <tr><td>Google Gemini</td><td>Gemini 2.0 Flash</td><td>Google</td><td>国外</td></tr>
+          <tr><td>xAI Grok</td><td>Grok-2</td><td>xAI</td><td>国外</td></tr>
+          <tr><td>Anthropic Claude</td><td>Claude 3.5 Sonnet</td><td>Anthropic</td><td>国外</td></tr>
+          <tr><td>阿里 通义千问</td><td>Qwen2.5</td><td>阿里</td><td>国内</td></tr>
+          <tr><td>智谱 GLM</td><td>GLM-4</td><td>智谱</td><td>国内</td></tr>
+          <tr><td>DeepSeek</td><td>DeepSeek-V2</td><td>DeepSeek</td><td>国内</td></tr>
+          <tr><td>Meta Llama</td><td>Llama 3.1</td><td>Meta</td><td>国外</td></tr>
+          <tr><td>Microsoft Phi</td><td>Phi-3</td><td>Microsoft</td><td>国外</td></tr>
+          <tr><td>百度 文心一言</td><td>ERNIE 4.0</td><td>百度</td><td>国内</td></tr>
+          <tr><td>字节跳动 豆包</td><td>Doubao Pro</td><td>字节跳动</td><td>国内</td></tr>
+          <tr><td>零一万物 Yi</td><td>Yi-Large</td><td>零一万物</td><td>国内</td></tr>
+          <tr><td>Mistral AI Mistral</td><td>Mistral Large 2</td><td>Mistral AI</td><td>国外</td></tr>
+          <tr><td>Cohere Command</td><td>Command R+</td><td>Cohere</td><td>国外</td></tr>
+          <tr><td>Apple Apple Intelligence</td><td>-</td><td>Apple</td><td>国外</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section>
+    <details>
+      <summary>数据来源</summary>
+      <ul>
+        <li><a href="https://openai.com/api/pricing/" target="_blank">https://openai.com/api/pricing/</a></li>
+        <li><a href="https://ai.google.dev/pricing" target="_blank">https://ai.google.dev/pricing</a></li>
+        <li><a href="https://x.ai/" target="_blank">https://x.ai/</a></li>
+        <li><a href="https://www.anthropic.com/pricing" target="_blank">https://www.anthropic.com/pricing</a></li>
+        <li><a href="https://tongyi.aliyun.com/" target="_blank">https://tongyi.aliyun.com/</a></li>
+        <li><a href="https://open.bigmodel.cn/" target="_blank">https://open.bigmodel.cn/</a></li>
+        <li><a href="https://github.com/deepseek-ai" target="_blank">https://github.com/deepseek-ai</a></li>
+        <li><a href="https://llama.meta.com/" target="_blank">https://llama.meta.com/</a></li>
+        <li><a href="https://www.microsoft.com/en-us/research/project/phi/" target="_blank">https://www.microsoft.com/en-us/research/project/phi/</a></li>
+        <li><a href="https://yiyan.baidu.com/" target="_blank">https://yiyan.baidu.com/</a></li>
+        <li><a href="https://www.doubao.com/" target="_blank">https://www.doubao.com/</a></li>
+        <li><a href="https://www.lingyiwanwu.com/" target="_blank">https://www.lingyiwanwu.com/</a></li>
+        <li><a href="https://mistral.ai/pricing" target="_blank">https://mistral.ai/pricing</a></li>
+        <li><a href="https://cohere.com/pricing" target="_blank">https://cohere.com/pricing</a></li>
+        <li><a href="https://www.apple.com/apple-intelligence/" target="_blank">https://www.apple.com/apple-intelligence/</a></li>
+      </ul>
+    </details>
+  </section>
+  <script>
+    // Table enhancements: resizable columns & sortable columns
+    (function() {
+      // --- Helper functions ---
+      function getCellValue(tr, idx) {
+        var td = tr.children[idx];
+        if (!td) return '';
+        // Try to get text inside td, or fallback to innerText
+        return td.textContent.trim();
+      }
+      function compare(a, b, type) {
+        // Try number
+        var na = parseFloat(a.replace(/[^0-9\.\-]/g, ''));
+        var nb = parseFloat(b.replace(/[^0-9\.\-]/g, ''));
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        // Fallback: localeCompare (string)
+        return a.localeCompare(b, 'zh');
+      }
+      function makeSortable(table) {
+        var ths = table.tHead.rows[0].cells;
+        for (let i = 0; i < ths.length; i++) {
+          let th = ths[i];
+          th.classList.add('sortable');
+          th.addEventListener('click', function(e){
+            // Ignore if clicking resize handle
+            if(e.target.classList.contains('resize-handle')) return;
+            var sorted = th.classList.contains('sorted-asc') ? 'asc' : (th.classList.contains('sorted-desc') ? 'desc' : null);
+            // Remove sort state from others
+            for (let j=0;j<ths.length;j++) {
+              ths[j].classList.remove('sorted-asc','sorted-desc');
+            }
+            var dir = sorted === 'asc' ? 'desc' : 'asc';
+            th.classList.add('sorted-'+dir);
+            // Sort rows
+            var tbody = table.tBodies[0];
+            var rows = Array.from(tbody.rows);
+            rows.sort(function(a,b){
+              var va = getCellValue(a,i), vb = getCellValue(b,i);
+              var cmp = compare(va, vb);
+              return dir === 'asc' ? cmp : -cmp;
+            });
+            // Re-append sorted rows
+            for (let row of rows) tbody.appendChild(row);
+          });
+        }
+      }
+      function makeResizable(table) {
+        let ths = table.tHead.rows[0].cells;
+        let tableRect = null;
+        for (let i = 0; i < ths.length; i++) {
+          let th = ths[i];
+          let handle = document.createElement('div');
+          handle.className = 'resize-handle';
+          th.appendChild(handle);
+          handle.addEventListener('mousedown', function(e){
+            e.preventDefault();
+            tableRect = table.getBoundingClientRect();
+            let startX = e.clientX;
+            let startWidth = th.offsetWidth;
+            let nextTh = th.nextElementSibling;
+            let nextStartWidth = nextTh ? nextTh.offsetWidth : 0;
+            document.body.style.cursor = 'col-resize';
+            function onMove(ev){
+              let delta = ev.clientX - startX;
+              let newWidth = Math.max(40, startWidth + delta);
+              th.style.width = newWidth+'px';
+              if (nextTh) {
+                let newNextWidth = Math.max(40, nextStartWidth - delta);
+                nextTh.style.width = newNextWidth+'px';
+              }
+            }
+            function onUp(){
+              document.removeEventListener('mousemove', onMove);
+              document.removeEventListener('mouseup', onUp);
+              document.body.style.cursor = '';
+            }
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+          });
+        }
+      }
+      // --- Apply to all tables in table-container ---
+      document.querySelectorAll('.table-container > table').forEach(function(table){
+        makeSortable(table);
+        makeResizable(table);
+      });
+    })();
+  </script>
+</body>
+</html>
